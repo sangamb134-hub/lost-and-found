@@ -1,30 +1,54 @@
-# Render Blueprint for the Lost and Found Management System
+# Render Blueprint — Campus Lost and Found Management System
 # Docs: https://render.com/docs/blueprint-spec
-# Deploy this repo on Render and it will create both the web service and database.
+#
+# Deploy:
+#   1. Push this repo to GitHub.
+#   2. Render Dashboard → New + → Blueprint → select this repo.
+#   3. Set SECRET_KEY manually in the Render Dashboard env settings.
+#   4. Render creates the PostgreSQL DB and web service automatically.
 
 databases:
   - name: lostfound-db
     databaseName: lostfound
     plan: free
-    ipAllowList: []   # Render sets this automatically; tighten as needed
 
 services:
   - type: web
     name: lost-and-found
-    runtime: python
+    runtime: docker
     plan: free
-    # Build from the Dockerfile in the repo root
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     autoDeploy: true
+
+    # Run DB migrations and seed default admin before every deploy.
+    # "flask db upgrade" applies any pending schema migrations.
+    # "flask seed-admin" creates the admin account if it doesn't exist yet.
+    preDeployCommand: "flask db upgrade && flask seed-admin"
+
     envVars:
+      # ⚠️  Set this manually in the Render Dashboard — do NOT hard-code it here.
       - key: SECRET_KEY
-        sync: false   # set manually in the Render dashboard (long random string)
+        sync: false
+
       - key: FLASK_ENV
         value: production
+
+      - key: FLASK_APP
+        value: wsgi.py
+
+      # Render injects the DB connection string automatically from the database above.
       - key: DATABASE_URL
         fromDatabase:
           name: lostfound-db
           property: connectionString
-      - key: WEB_CONCURRENCY
-        value: 3
+
+      # Render assigns a random PORT; gunicorn must bind to it.
+      - key: PORT
+        value: 10000
+
+      # Default admin credentials — override in the dashboard for production.
+      - key: ADMIN_EMAIL
+        value: admin@lostfound.local
+      - key: ADMIN_PASSWORD
+        sync: false
