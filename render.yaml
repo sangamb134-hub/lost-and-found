@@ -1,11 +1,5 @@
 # Render Blueprint — Campus Lost and Found Management System
-# Docs: https://render.com/docs/blueprint-spec
-#
-# Deploy:
-#   1. Push this repo to GitHub.
-#   2. Render Dashboard → New + → Blueprint → select this repo.
-#   3. Set SECRET_KEY manually in the Render Dashboard env settings.
-#   4. Render creates the PostgreSQL DB and web service automatically.
+# Free tier compatible (no preDeployCommand)
 
 databases:
   - name: lostfound-db
@@ -21,13 +15,7 @@ services:
     healthCheckPath: /
     autoDeploy: true
 
-    # Run DB migrations and seed default admin before every deploy.
-    # "flask db upgrade" applies any pending schema migrations.
-    # "flask seed-admin" creates the admin account if it doesn't exist yet.
-    preDeployCommand: "flask db upgrade && flask seed-admin"
-
     envVars:
-      # ⚠️  Set this manually in the Render Dashboard — do NOT hard-code it here.
       - key: SECRET_KEY
         sync: false
 
@@ -37,18 +25,16 @@ services:
       - key: FLASK_APP
         value: wsgi.py
 
-      # Render injects the DB connection string automatically from the database above.
       - key: DATABASE_URL
         fromDatabase:
           name: lostfound-db
           property: connectionString
 
-      # Render assigns a random PORT; gunicorn must bind to it.
       - key: PORT
         value: 10000
 
-      # Default admin credentials — override in the dashboard for production.
       - key: ADMIN_EMAIL
         value: admin@lostfound.local
+
       - key: ADMIN_PASSWORD
         sync: false
