@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Report Found Item{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    {% set page_title = "Report a Found Item" %}
+    {% set page_subtitle = "Thank you for helping. List what you found so the owner can claim it." %}
+    {% set action_url = url_for('items.report_found') %}
+    {% include "_item_form.html" with context %}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('imageInput').addEventListener('change', function (e) {
+    const preview = document.getElementById('imagePreview');
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            preview.src = ev.target.result;
+            preview.classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.classList.remove('show');
+    }
+});
+</script>
+{% endblock %}

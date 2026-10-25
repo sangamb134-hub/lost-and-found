@@ -1,0 +1,61 @@
+{# Shared item report form. Expects: form, submit_label, page_title, page_subtitle, action_url #}
+<div class="card form-card fade-in">
+    <div class="card-body">
+        <h3 class="section-title mb-1">{{ page_title }}</h3>
+        <p class="section-subtitle mb-4">{{ page_subtitle }}</p>
+
+        <form method="POST" action="{{ action_url }}" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">{{ form.title.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.title(class="form-control", placeholder="e.g. Black leather wallet") }}
+                    {% for error in form.title.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.category.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.category(class="form-select") }}
+                    {% for error in form.category.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">{{ form.description.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.description(class="form-control", rows="4", placeholder="Describe color, brand, distinctive features...") }}
+                    {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.incident_date.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.incident_date(class="form-control") }}
+                    {% for error in form.incident_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.location.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.location(class="form-control", placeholder="e.g. Central Library, 2nd floor") }}
+                    {% for error in form.location.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">{{ form.contact.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.contact(class="form-control", placeholder="Email or phone number to reach you") }}
+                    <div class="form-text">This is shared only when a claim is made, not shown publicly.</div>
+                    {% for error in form.contact.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">{{ form.image.label.text }}</label>
+                    {{ form.image(class="form-control", id="imageInput", accept="image/*") }}
+                    <div class="form-text">Optional. PNG, JPG, GIF, WEBP — max 5 MB.</div>
+                    {% for error in form.image.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    <img id="imagePreview" class="image-preview mt-3 img-fluid" alt="Preview">
+                </div>
+
+                <div class="col-12 d-flex gap-2 mt-2">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

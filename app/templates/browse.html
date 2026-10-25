@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Browse Items{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <div class="mb-4">
+        <h1 class="section-title mb-1">Browse Items</h1>
+        <p class="section-subtitle mb-0">Search and filter all reported lost and found items on campus.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <form class="filter-bar mb-4" method="GET" action="{{ url_for('main.browse') }}">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-4">
+                <label class="form-label small mb-1">Keyword</label>
+                <input type="text" class="form-control" name="q" value="{{ filters.q }}" placeholder="Search title or description...">
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <label class="form-label small mb-1">Type</label>
+                <select class="form-select" name="type">
+                    <option value="">All</option>
+                    <option value="lost" {{ 'selected' if filters.type == 'lost' }}>Lost</option>
+                    <option value="found" {{ 'selected' if filters.type == 'found' }}>Found</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <label class="form-label small mb-1">Category</label>
+                <select class="form-select" name="category">
+                    <option value="">All</option>
+                    {% for cat in item_categories %}
+                        <option value="{{ cat }}" {{ 'selected' if filters.category == cat }}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <label class="form-label small mb-1">Location</label>
+                <input type="text" class="form-control" name="location" value="{{ filters.location }}" placeholder="Location">
+            </div>
+            <div class="col-md-6 col-lg-1">
+                <label class="form-label small mb-1">From</label>
+                <input type="date" class="form-control" name="from_date" value="{{ filters.from_date }}">
+            </div>
+            <div class="col-md-6 col-lg-1">
+                <label class="form-label small mb-1">To</label>
+                <input type="date" class="form-control" name="to_date" value="{{ filters.to_date }}">
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3 justify-content-end">
+            <a href="{{ url_for('main.browse') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1"></i>Reset</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply Filters</button>
+        </div>
+    </form>
+
+    <!-- Results -->
+    {% if items %}
+        <p class="text-muted small mb-3">Showing {{ items | length }} of {{ pagination.total }} items</p>
+        <div class="row g-4">
+            {% for item in items %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    {% include "_item_card.html" %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+            <nav class="mt-4 d-flex justify-content-center" aria-label="Item pagination">
+                <ul class="pagination">
+                    <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                        <a class="page-link" href="{{ url_for('main.browse', page=pagination.prev_num, **filters) }}">&laquo;</a>
+                    </li>
+                    {% for p in range(1, pagination.pages + 1) %}
+                        <li class="page-item {{ 'active' if p == pagination.page }}">
+                            <a class="page-link" href="{{ url_for('main.browse', page=p, **filters) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                        <a class="page-link" href="{{ url_for('main.browse', page=pagination.next_num, **filters) }}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-search d-block mb-3"></i>
+            <h5>No items found</h5>
+            <p class="mb-3">Try adjusting your filters or report a new item.</p>
+            <a href="{{ url_for('items.report_lost') }}" class="btn btn-primary">Report an Item</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

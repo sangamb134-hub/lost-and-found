@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Claim Item{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="card form-card fade-in">
+        <div class="card-body">
+            <h3 class="section-title mb-1">Claim: {{ item.title }}</h3>
+            <p class="section-subtitle mb-4">Help the reporter verify you're the rightful owner.</p>
+
+            <div class="alert alert-info">
+                <i class="bi bi-shield-check me-1"></i>
+                Provide specific identifying details that only the owner would know
+                (e.g. distinctive marks, contents, serial number).
+            </div>
+
+            <form method="POST" action="{{ url_for('claims.create_claim', item_id=item.id) }}">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <label class="form-label">{{ form.message.label.text }} <span class="required-mark">*</span></label>
+                    {{ form.message(class="form-control", rows="5", placeholder="Describe identifying details only the owner would know...") }}
+                    {% for error in form.message.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="d-flex gap-2">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                    <a href="{{ url_for('main.item_details', item_id=item.id) }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

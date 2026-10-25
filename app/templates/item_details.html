@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }}{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.browse') }}">Browse</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ item.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Image -->
+        <div class="col-lg-6">
+            <div class="card border-0 rounded-xl shadow-soft overflow-hidden">
+                {% if item.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}" class="w-100" style="max-height: 480px; object-fit: contain; background:#f8fafc;" alt="{{ item.title }}">
+                {% else %}
+                    <div class="no-image-placeholder" style="height:400px; border-radius: var(--lf-radius);">
+                        <i class="bi bi-image"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="col-lg-6">
+            <div class="d-flex gap-2 mb-3">
+                <span class="badge {{ 'badge-lost' if item.item_type == 'lost' else 'badge-found' }} fs-6">
+                    {{ item.item_type | capitalize }}
+                </span>
+                <span class="badge bg-secondary fs-6">{{ item.category }}</span>
+                {% if item.status == 'returned' %}
+                    <span class="badge badge-returned fs-6">Returned</span>
+                {% endif %}
+            </div>
+
+            <h1 class="section-title mb-3">{{ item.title }}</h1>
+            <p class="text-muted lead">{{ item.description }}</p>
+
+            <hr class="my-4">
+
+            <div class="row">
+                <div class="col-sm-6 mb-3">
+                    <div class="text-muted small"><i class="bi bi-calendar me-1"></i>Date {{ item.item_type }}</div>
+                    <div class="fw-semibold">{{ item.incident_date.strftime('%B %d, %Y') if item.incident_date else 'Not specified' }}</div>
+                </div>
+                <div class="col-sm-6 mb-3">
+                    <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>Location</div>
+                    <div class="fw-semibold">{{ item.location }}</div>
+                </div>
+                <div class="col-sm-6 mb-3">
+                    <div class="text-muted small"><i class="bi bi-clock me-1"></i>Reported on</div>
+                    <div class="fw-semibold">{{ item.created_at.strftime('%B %d, %Y') }}</div>
+                </div>
+                <div class="col-sm-6 mb-3">
+                    <div class="text-muted small"><i class="bi bi-person me-1"></i>Reported by</div>
+                    <div class="fw-semibold">{{ item.owner.name }}</div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Claim / actions -->
+            {% if item.status == 'returned' %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-1"></i>This item has been returned to its owner.
+                </div>
+            {% elif current_user.is_authenticated %}
+                {% if item.user_id == current_user.id %}
+                    <div class="alert alert-secondary">
+                        <i class="bi bi-person-check me-1"></i>This is your listing.
+                        <div class="mt-2 d-flex gap-2">
+                            <a href="{{ url_for('items.edit_item', item_id=item.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>
+                            <form method="POST" action="{{ url_for('items.delete_item', item_id=item.id) }}" class="d-inline" onsubmit="return confirm('Delete this item? This cannot be undone.');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('claims.create_claim', item_id=item.id) }}" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-hand-index me-1"></i>Claim This Item
+                    </a>
+                    <p class="text-muted small text-center mt-2 mb-0">You'll provide identifying details that only the owner would know.</p>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Please <a href="{{ url_for('auth.login', next=url_for('main.item_details', item_id=item.id)) }}">log in</a> to submit a claim request.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

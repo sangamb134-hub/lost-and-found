@@ -1,0 +1,36 @@
+# Docker Compose for local development with PostgreSQL.
+# Run: docker-compose up --build
+# The app is available at http://localhost:5000 (or PORT env var)
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lf_user
+      POSTGRES_PASSWORD: lf_password
+      POSTGRES_DB: lostfound
+    ports:
+      - "5432:5432"
+    volumes:
+      - lf_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lf_user -d lostfound"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-local-dev-secret-key-change-me}
+      - DATABASE_URL=postgresql://lf_user:lf_password@db:5432/lostfound
+      - FLASK_ENV=production
+    ports:
+      - "5000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  lf_pgdata:

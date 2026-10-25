@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+    <div class="container text-center position-relative" style="z-index:2;">
+        <h1>Lost Something? Let's Find It.</h1>
+        <p class="lead mt-3 mb-4 mx-auto" style="max-width: 680px;">
+            A campus-wide platform where students, faculty, and security staff report lost
+            and found items, search listings, and help reunite belongings with their owners.
+        </p>
+
+        <!-- Search bar -->
+        <form class="hero-search" action="{{ url_for('main.browse') }}" method="GET">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search for items, categories, or locations..." aria-label="Search items">
+                <button class="btn btn-accent" type="submit">Search</button>
+            </div>
+        </form>
+
+        <!-- Action buttons -->
+        <div class="hero-actions mt-4">
+            <a href="{{ url_for('items.report_lost') }}" class="btn btn-light-hover btn-lg">
+                <i class="bi bi-search me-2"></i>Report Lost Item
+            </a>
+            <a href="{{ url_for('items.report_found') }}" class="btn btn-accent btn-lg">
+                <i class="bi bi-box-arrow-in-down me-2"></i>Report Found Item
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics -->
+<section class="container py-5">
+    <div class="row text-center g-4">
+        <div class="col-md-4">
+            <div class="card stat-card h-100">
+                <div class="card-body d-flex align-items-center gap-3 text-start">
+                    <div class="stat-icon" style="background:#fee2e2; color:#ef4444;"><i class="bi bi-exclamation-circle"></i></div>
+                    <div>
+                        <div class="stat-value" id="stat-lost">{{ stats.total_lost }}</div>
+                        <div class="stat-label">Lost Items</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card h-100">
+                <div class="card-body d-flex align-items-center gap-3 text-start">
+                    <div class="stat-icon" style="background:#dcfce7; color:#10b981;"><i class="bi bi-box-seam"></i></div>
+                    <div>
+                        <div class="stat-value" id="stat-found">{{ stats.total_found }}</div>
+                        <div class="stat-label">Found Items</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card h-100">
+                <div class="card-body d-flex align-items-center gap-3 text-start">
+                    <div class="stat-icon" style="background:#e0f2fe; color:#0ea5e9;"><i class="bi bi-check2-circle"></i></div>
+                    <div>
+                        <div class="stat-value" id="stat-returned">{{ stats.returned }}</div>
+                        <div class="stat-label">Returned to Owners</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recently reported items -->
+<section class="container pb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="section-title mb-1">Recently Reported</h2>
+            <p class="section-subtitle mb-0">Latest lost and found listings on campus</p>
+        </div>
+        <a href="{{ url_for('main.browse') }}" class="btn btn-outline-primary">View all items <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+
+    <div class="row g-4">
+        {% set recent_items = recent_lost + recent_found %}
+        {% if recent_items %}
+            {% for item in recent_items[:8] %}
+                <div class="col-sm-6 col-lg-3">
+                    {% include "_item_card.html" %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-inbox d-block mb-2"></i>
+                    <p class="mb-0">No items reported yet. Be the first to report one!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="py-5" style="background: var(--lf-soft);">
+    <div class="container py-4">
+        <h2 class="section-title text-center mb-5">How It Works</h2>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="card stat-card h-100 border-0">
+                    <div class="card-body">
+                        <div class="stat-icon mx-auto mb-3" style="background:#dbeafe;color:var(--lf-primary);"><i class="bi bi-pencil-square"></i></div>
+                        <h5>Report an Item</h5>
+                        <p class="text-muted mb-0">Lost something or found something on campus? Report it with details and a photo.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100 border-0">
+                    <div class="card-body">
+                        <div class="stat-icon mx-auto mb-3" style="background:#fef3c7;color:var(--lf-accent);"><i class="bi bi-search"></i></div>
+                        <h5>Search &amp; Match</h5>
+                        <p class="text-muted mb-0">Browse and filter listings to find a match for what you lost or found.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100 border-0">
+                    <div class="card-body">
+                        <div class="stat-icon mx-auto mb-3" style="background:#dcfce7;color:#10b981;"><i class="bi bi-people"></i></div>
+                        <h5>Claim &amp; Reunite</h5>
+                        <p class="text-muted mb-0">Submit a claim request so the reporter can verify ownership and return it.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+# Render Blueprint for the Lost and Found Management System
+# Docs: https://render.com/docs/blueprint-spec
+# Deploy this repo on Render and it will create both the web service and database.
+
+databases:
+  - name: lostfound-db
+    databaseName: lostfound
+    plan: free
+    ipAllowList: []   # Render sets this automatically; tighten as needed
+
+services:
+  - type: web
+    name: lost-and-found
+    runtime: python
+    plan: free
+    # Build from the Dockerfile in the repo root
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: SECRET_KEY
+        sync: false   # set manually in the Render dashboard (long random string)
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lostfound-db
+          property: connectionString
+      - key: WEB_CONCURRENCY
+        value: 3

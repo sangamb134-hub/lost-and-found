@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <div class="mb-4">
+        <h1 class="section-title mb-1"><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</h1>
+        <p class="section-subtitle mb-0">Manage reported items, claims, and system statistics.</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-2">
+            <div class="card dashboard-card h-100"><div class="card-body text-center">
+                <div class="stat-value">{{ stats.total_users }}</div><div class="stat-label small">Users</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card dashboard-card h-100"><div class="card-body text-center">
+                <div class="stat-value">{{ stats.total_items }}</div><div class="stat-label small">Total Items</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card dashboard-card h-100"><div class="card-body text-center">
+                <div class="stat-value text-danger">{{ stats.total_lost }}</div><div class="stat-label small">Lost</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card dashboard-card h-100"><div class="card-body text-center">
+                <div class="stat-value text-success">{{ stats.total_found }}</div><div class="stat-label small">Found</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card dashboard-card h-100"><div class="card-body text-center">
+                <div class="stat-value text-info">{{ stats.returned }}</div><div class="stat-label small">Returned</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card dashboard-card h-100"><div class="card-body text-center">
+                <div class="stat-value text-warning">{{ stats.pending_claims }}</div><div class="stat-label small">Pending Claims</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Item management -->
+        <div class="col-lg-8">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary-dark">Reported Items</h5>
+                    <form class="d-flex gap-2" method="GET">
+                        <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+                            <option value="">All statuses</option>
+                            <option value="approved" {{ 'selected' if request.args.get('status')=='approved' }}>Approved</option>
+                            <option value="returned" {{ 'selected' if request.args.get('status')=='returned' }}>Returned</option>
+                            <option value="rejected" {{ 'selected' if request.args.get('status')=='rejected' }}>Rejected</option>
+                        </select>
+                        <select class="form-select form-select-sm" name="type" onchange="this.form.submit()">
+                            <option value="">All types</option>
+                            <option value="lost" {{ 'selected' if request.args.get('type')=='lost' }}>Lost</option>
+                            <option value="found" {{ 'selected' if request.args.get('type')=='found' }}>Found</option>
+                        </select>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    {% if items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover dashboard-table mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th><th>Type</th><th>Category</th><th>Status</th><th>Reporter</th><th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('main.item_details', item_id=item.id) }}" class="text-decoration-none fw-semibold">{{ item.title }}</a>
+                                            <div class="small text-muted">{{ item.location }} &middot; {{ item.created_at.strftime('%b %d') }}</div>
+                                        </td>
+                                        <td><span class="badge {{ 'badge-lost' if item.item_type=='lost' else 'badge-found' }}">{{ item.item_type | capitalize }}</span></td>
+                                        <td class="small">{{ item.category }}</td>
+                                        <td><span class="badge {{ 'badge-approved' if item.status=='approved' else 'badge-returned' if item.status=='returned' else 'badge-rejected' }}">{{ item.status | capitalize }}</span></td>
+                                        <td class="small">{{ item.owner.name }}</td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></button>
+                                                <ul class="dropdown-menu">
+                                                    {% if item.status != 'returned' %}
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.mark_returned', item_id=item.id) }}">
+                                                            <button type="submit" class="dropdown-item text-info"><i class="bi bi-check2-circle me-1"></i>Mark Returned</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    {% if item.status != 'approved' %}
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.approve_item', item_id=item.id) }}">
+                                                            <button type="submit" class="dropdown-item text-success"><i class="bi bi-check me-1"></i>Approve</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    {% if item.status != 'rejected' %}
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.reject_item', item_id=item.id) }}">
+                                                            <button type="submit" class="dropdown-item text-warning"><i class="bi bi-slash-circle me-1"></i>Reject</button>
+                                                        </form>
+                                                    </li>
+                                                    {% endif %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.delete_item', item_id=item.id) }}" onsubmit="return confirm('Delete this item permanently?');">
+                                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-1"></i>Delete</button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state"><i class="bi bi-inbox d-block mb-2"></i><p class="mb-0">No items match these filters.</p></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending claims -->
+        <div class="col-lg-4">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white py-3"><h5 class="mb-0 text-primary-dark">Pending Claims</h5></div>
+                <div class="card-body p-0">
+                    {% if pending_claims %}
+                        <div class="list-group list-group-flush">
+                            {% for claim in pending_claims %}
+                                <div class="list-group-item">
+                                    <div class="fw-semibold">{{ claim.claimant.name }}</div>
+                                    <div class="small text-muted">claims <a href="{{ url_for('main.item_details', item_id=claim.item_id) }}">{{ claim.item.title }}</a></div>
+                                    <p class="small fst-italic my-2">"{{ claim.message }}"</p>
+                                    <div class="d-flex gap-2">
+                                        <form method="POST" action="{{ url_for('admin.approve_claim', claim_id=claim.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check me-1"></i>Approve</button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('admin.reject_claim', claim_id=claim.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x me-1"></i>Reject</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state"><i class="bi bi-check2-all d-block mb-2"></i><p class="mb-0">No pending claims.</p></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
