@@ -1,0 +1,13 @@
+# Normalize line endings: store LF in the repo, check out native on each OS.
+# This keeps builds consistent on Linux (Render/Docker) regardless of the
+# platform used to author the files.
+* text=auto eol=lf
+
+# Binary files must never have line-ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
