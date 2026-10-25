@@ -1,10 +1,7 @@
 # Render Blueprint — Campus Lost and Found Management System
-# Free tier compatible (no preDeployCommand)
-
-databases:
-  - name: lostfound-db
-    databaseName: lostfound
-    plan: free
+# Free tier compatible — no new database created.
+# Set DATABASE_URL manually in the Render dashboard using your existing
+# free PostgreSQL database connection string.
 
 services:
   - type: web
@@ -25,10 +22,10 @@ services:
       - key: FLASK_APP
         value: wsgi.py
 
+      # Set this manually in the Render dashboard:
+      # use your existing free PostgreSQL Internal Database URL
       - key: DATABASE_URL
-        fromDatabase:
-          name: lostfound-db
-          property: connectionString
+        sync: false
 
       - key: PORT
         value: 10000
